@@ -65,8 +65,8 @@ parameter_defaults:
   ContrailBondDpdkInterface: {{ DPDK_BOND_INTERFACE }}
 {% endif %}
 {% if DPDK_BOND_INTERFACE_MEMBERS %}
-  BondDpdkInterfaceMembers: {{ DPDK_BOND_INTERFACE_MEMBERS }}
-  ContrailBondDpdkInterfaceMembers: {{ DPDK_BOND_INTERFACE_MEMBERS }}
+  BondDpdkInterfaceMembers: "{{ DPDK_BOND_INTERFACE_MEMBERS|join(',') }}"
+  ContrailBondDpdkInterfaceMembers: "{{ DPDK_BOND_INTERFACE_MEMBERS|join(',') }}"
 {% endif %}
 {% if DPDK_VROUTER_PARENT_VLAN_INTERFACE %}
   VlanDpdkParentInterface: {{ DPDK_VROUTER_PARENT_VLAN_INTERFACE }}
