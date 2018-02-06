@@ -53,10 +53,28 @@
     remote_src: yes
   when: BUILD_DPDK_IMAGE == 'yes'
 
+- name: register dpdk image with satelitte
+    /usr/bin/virt-customize  -a /home/stack/images/overcloud-full-dpdk.qcow2 \
+    --copy-in /tmp/katello-ca-consumer-latest.noarch.rpm:/tmp/ \
+    --run-command 'yum localinstall -y /tmp/katello-ca-consumer-latest.noarch.rpm' \
+    --run-command 'hostname virt-customize.local; subscription-manager unregister || true' \
+    --run-command 'hostname virt-customize.local; subscription-manager clean' \
+    --run-command 'hostname virt-customize.local; subscription-manager register --activationkey={{ SATELLITE_KEY }} --org={{ SATELLITE_ORG }} --force'
+  environment:
+    LIBGUESTFS_BACKEND: direct
+  when: RH_REG_METHOD == 'satellite'
+
+- name: register dpdk image with portal
+  shell: |
+    /usr/bin/virt-customize  -a /home/stack/images/overcloud-full-dpdk.qcow2 \
+    --sm-credentials {{ RH_PORTAL_USER }}:password:{{ RH_PORTAL_PASSWORD }} --sm-register --sm-attach auto
+  environment:
+    LIBGUESTFS_BACKEND: direct
+  when: RH_REG_METHOD == 'portal'
+
 - name: virt cusomize dpdk image
   shell: |
     /usr/bin/virt-customize  -a /home/stack/images/overcloud-full-dpdk.qcow2 \
-    --sm-credentials {{ RH_PORTAL_USER }}:password:{{ RH_PORTAL_PASSWORD }} --sm-register --sm-attach auto \
     --run-command 'subscription-manager repos --enable=rhel-7-server-rpms --enable=rhel-7-server-extras-rpms --enable=rhel-7-server-rh-common-rpms --enable=rhel-ha-for-rhel-7-server-rpms --enable=rhel-7-server-openstack-10-rpms --enable=rhel-7-server-openstack-10-devtools-rpms' \
     --copy-in /etc/yum.repos.d/contrail.repo:/etc/yum.repos.d \
     --run-command 'yum install -y contrail-vrouter-utils contrail-vrouter-dpdk contrail-vrouter-dpdk-init' \
@@ -76,6 +94,8 @@
     --run-command 'subscription-manager repos --enable=rhel-7-server-rpms --enable=rhel-7-server-extras-rpms --enable=rhel-7-server-rh-common-rpms --enable=rhel-ha-for-rhel-7-server-rpms --enable=rhel-7-server-openstack-11-rpms --enable=rhel-7-server-openstack-11-devtools-rpms' \
     --copy-in /etc/yum.repos.d/contrail.repo:/etc/yum.repos.d \
     --run-command 'yum install -y contrail-vrouter-utils contrail-vrouter-dpdk contrail-vrouter-dpdk-init' \
+    --run-command 'rm -fr /var/cache/yum/*' \
+    --run-command 'yum clean all' \
     --run-command 'rm -rf /etc/yum.repos.d/contrail.repo' \
     --run-command 'subscription-manager unregister' \
     --selinux-relabel
