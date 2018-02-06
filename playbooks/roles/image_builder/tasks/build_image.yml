@@ -1,6 +1,6 @@
 ---
 - name: Create undercloud image
-  command: /usr/bin/qemu-img create -f qcow2 {{ IMAGE_DIRECTORY }}/{{ UNDERCLOUD_NAME }}.qcow2 {{ UNDERCLOUD_IMAGE_SIZE }}
+  command: /usr/bin/qemu-img create -f qcow2 -o preallocation=metadata {{ IMAGE_DIRECTORY }}/{{ UNDERCLOUD_NAME }}.qcow2 {{ UNDERCLOUD_IMAGE_SIZE }}
 
 - name: Expand undercloud image size
   shell: /usr/bin/virt-resize --expand /dev/sda1 {{ RHEL_QCOW }} {{ IMAGE_DIRECTORY }}/{{ UNDERCLOUD_NAME }}.qcow2
